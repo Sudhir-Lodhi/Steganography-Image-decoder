@@ -1,4 +1,4 @@
-# Steganography image decoder to learn hidden message
+# Image Steganography
 🕵️‍♂️ Steganography Decoder
 
 A tool for decoding hidden messages or data embedded in images using steganography techniques. This system allows users to extract secret messages, files, or other hidden information encoded in images, providing an easy-to-use interface for decryption and analysis.
