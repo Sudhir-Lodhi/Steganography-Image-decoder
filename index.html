@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Small Business Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-boxes"></i> Inventory Management</h1>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-cubes"></i>
+                        <div>
+                            <span class="stat-number" id="totalItems">0</span>
+                            <span class="stat-label">Total Items</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <div>
+                            <span class="stat-number" id="totalValue">$0</span>
+                            <span class="stat-label">Total Value</span>
+                        </div>
+                    </div>
+                    <div class="stat-card low-stock">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <span class="stat-number" id="lowStockCount">0</span>
+                            <span class="stat-label">Low Stock</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls Section -->
+        <section class="controls">
+            <div class="controls-left">
+                <button class="btn btn-primary" id="addItemBtn">
+                    <i class="fas fa-plus"></i> Add New Item
+                </button>
+                <button class="btn btn-secondary" id="exportBtn">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button class="btn btn-secondary" id="importBtn">
+                    <i class="fas fa-upload"></i> Import Data
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+            <div class="controls-right">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search items...">
+                </div>
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="in-stock">In Stock</option>
+                    <option value="low-stock">Low Stock</option>
+                    <option value="out-of-stock">Out of Stock</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Inventory Table -->
+        <section class="inventory-section">
+            <div class="table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll">
+                            </th>
+                            <th>Item Name <i class="fas fa-sort" data-sort="name"></i></th>
+                            <th>SKU <i class="fas fa-sort" data-sort="sku"></i></th>
+                            <th>Category <i class="fas fa-sort" data-sort="category"></i></th>
+                            <th>Quantity <i class="fas fa-sort" data-sort="quantity"></i></th>
+                            <th>Price <i class="fas fa-sort" data-sort="price"></i></th>
+                            <th>Total Value <i class="fas fa-sort" data-sort="totalValue"></i></th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions" id="bulkActionsBar" style="display: none;">
+            <span id="selectedCount">0 items selected</span>
+            <button class="btn btn-danger" id="bulkDeleteBtn">
+                <i class="fas fa-trash"></i> Delete Selected
+            </button>
+            <button class="btn btn-warning" id="bulkEditBtn">
+                <i class="fas fa-edit"></i> Bulk Edit
+            </button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Item Modal -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Item</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="itemForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="itemName">Item Name *</label>
+                        <input type="text" id="itemName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemSku">SKU *</label>
+                        <input type="text" id="itemSku" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemCategory">Category</label>
+                        <input type="text" id="itemCategory" list="categoryList">
+                        <datalist id="categoryList"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQuantity">Quantity *</label>
+                        <input type="number" id="itemQuantity" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Unit Price *</label>
+                        <input type="number" id="itemPrice" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemMinStock">Minimum Stock</label>
+                        <input type="number" id="itemMinStock" min="0" value="5">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="itemDescription">Description</label>
+                    <textarea id="itemDescription" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div class="modal" id="bulkEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bulk Edit Items</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="bulkEditForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="bulkCategory">Category</label>
+                        <input type="text" id="bulkCategory" placeholder="Leave empty to keep current">
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkPriceAdjustment">Price Adjustment (%)</label>
+                        <input type="number" id="bulkPriceAdjustment" step="0.1" placeholder="e.g., 10 for +10%, -5 for -5%">
+                    </div>
+                    <div class="form-group">
+                        <label for="bulkMinStock">Minimum Stock</label>
+                        <input type="number" id="bulkMinStock" min="0" placeholder="Leave empty to keep current">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="bulkCancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h2 id="confirmTitle">Confirm Action</h2>
+            </div>
+            <p id="confirmMessage">Are you sure you want to proceed?</p>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>7
